@@ -144,8 +144,20 @@ echo "Starting extraction of 50 states..."
 echo ""
 
 for state in "${states[@]}"; do
+    # Find the date-stamped GeoJSON file produced by convert_shapefile.py
+    geojson_file=$(ls "$GEOJSON_DIR"/${state}_*.geojson 2>/dev/null | head -1)
+
+    if [ -z "$geojson_file" ]; then
+        echo "✗ No GeoJSON file found for $state in $GEOJSON_DIR"
+        echo ""
+        continue
+    fi
+
+    # Derive the output pmtiles name from the GeoJSON filename
+    base_name=$(basename "$geojson_file" .geojson)
+
     echo "Processing $state..."
-    "$PMTILES_BIN" extract "$INPUT_MAP" "$OUTPUT_DIR/${state}.pmtiles" --region="$GEOJSON_DIR/${state}.geojson"
+    "$PMTILES_BIN" extract "$INPUT_MAP" "$OUTPUT_DIR/${base_name}.pmtiles" --region="$geojson_file"
 
     if [ $? -eq 0 ]; then
         echo "✓ Successfully extracted $state"

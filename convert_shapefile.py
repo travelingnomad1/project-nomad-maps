@@ -12,12 +12,14 @@ Usage:
 import geopandas as gpd
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 
 
 def convert_shapefile_to_geojson(shp_path, output_dir='./geojson_output'):
     os.makedirs(output_dir, exist_ok=True)
-    
+    date_suffix = datetime.now().strftime('%Y-%m')
+
     print(f"Reading shapefile: {shp_path}")
     
     gdf = gpd.read_file(shp_path)
@@ -49,20 +51,20 @@ def convert_shapefile_to_geojson(shp_path, output_dir='./geojson_output'):
         else:
             filename = f"feature_{idx:03d}"
         filename = filename.lower()
-        output_path = os.path.join(output_dir, f"{filename}.geojson")
-        
+        output_path = os.path.join(output_dir, f"{filename}_{date_suffix}.geojson")
+
         # Create a GeoDataFrame with just this row
         single_state = gpd.GeoDataFrame([row], crs=gdf.crs)
-        
+
         # Save to GeoJSON file
         single_state.to_file(output_path, driver='GeoJSON')
-        
-        print(f"  ✓ {filename}.geojson")
+
+        print(f"  ✓ {filename}_{date_suffix}.geojson")
     
     # Also save all states in a single file
-    all_states_path = os.path.join(output_dir, "all_states.geojson")
+    all_states_path = os.path.join(output_dir, f"all_states_{date_suffix}.geojson")
     gdf.to_file(all_states_path, driver='GeoJSON')
-    print(f"\n✓ All states saved to: all_states.geojson")
+    print(f"\n✓ All states saved to: all_states_{date_suffix}.geojson")
     
     print(f"\nSuccess! Created {len(gdf)} GeoJSON files in: {output_dir}")
     
